@@ -1,0 +1,11 @@
+FICT is a simple file integrity checking tool. 
+
+Simple usage.
+
+    cd ~
+    fict init
+    fict add ~/Documents
+    fict compute
+
+database will be stored in ~/.fict. The file in ~/.fict 
+can be manipulated manually. The changes will be ingested upon next run. 

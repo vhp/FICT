@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+#
+#   Author: Vincent Perricone <vhp@fastmail.fm>
+#   Date: 11/22/2017
+#   Title: FICT: file intergrity checking tool
+#   License: Released under "Simplified BSD License" see LICENSE file
+#
+"""
+Usage:
+    fict [options]
+    fict init [<path>] [options]
+    fict add (<path>) [options]
+    fict compute [options]
+    fict list [options]
+    fict check [options]
+    fict (-h | --help)
+
+Generic options:
+    --hash-tool=FILE            Hashing Tool        [default: sha512sum]
+    --fict-dir=DIRECTORY        Fict Directory
+    --fict-db-name=FILE         DB filename         [default: fict_db]
+    -h, --help                  Show Help
+"""
+import sys
+import os
+from docopt import docopt
+from lib import core
+
+fict_dir_name_default = '.fict'
+
+if __name__ == '__main__':
+    args = docopt(__doc__)
+    if not args['--fict-dir']:
+        args['--fict-dir'] = '{}/{}'.format(os.getcwd(), fict_dir_name_default)
+    sys.exit(core.main(args))
