@@ -39,7 +39,7 @@ def init(args):
         os.makedirs(path, exist_ok=True)
         print("New FICT project created at: {}".format(path))
     else:
-         print("FICT project already exists at: {}".format(path))
+        print("FICT project already exists at: {}".format(path))
 
 def walkfs(path):
     walked = []
