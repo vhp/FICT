@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 
+#
 #   Author: Vincent Perricone <vhp@fastmail.fm>
 #   Date: 11/22/2017
 #   Title: FICT
@@ -44,7 +44,7 @@ def walkfs(path):
     for root, directories, filenames in os.walk(path):
         for directory in directories:
             walked.append(os.path.join(os.path.abspath(root), directory))
-        for filename in filenames: 
+        for filename in filenames:
             walked.append(os.path.join(os.path.abspath(root), filename))
     return walked
 
@@ -87,10 +87,10 @@ def main(args):
     elif not os.path.isdir(args['--fict-dir']):
         sys.exit('You must init a fict project first')
 
-    #Construct instances of FileObj's for later use. 
+    #Construct instances of FileObj's for later use.
     construct(args)
 
-    # Conditional operations after initialization and construction. 
+    # Conditional operations after initialization and construction.
     if args['add']:
         add(args)
     elif args['compute']:
