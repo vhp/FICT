@@ -109,5 +109,3 @@ class FileObj:
     def get_bundle(self):
         """Return bundles (path, hash)"""
         return '{},{}'.format(self.get_path(), self.get_hash())
-
-
