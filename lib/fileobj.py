@@ -14,11 +14,12 @@ from subprocess import Popen
 from subprocess import PIPE
 
 class FileObj:
-    instances = []
+    instances = {}
 
     def __init__(self, filetype, path, hash_type):
-        FileObj.instances.append(self)
         self.path = path
+        #Add instance to instances dictionary. Duplicates wont be added.
+        FileObj.instances.setdefault(self.path, self)
         self.filetype = None
         self.uuid = None
         self.status = 'pending'

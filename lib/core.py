@@ -62,14 +62,14 @@ def add(args):
 
 def compute(args):
     """Compute hashes of all instances in FileObj.instances"""
-    [obj.set_hash() for obj in FileObj.instances]
+    [obj.set_hash() for path, obj in FileObj.instances.items()]
 
 def get_list(args):
     """Print list of all files and their hashes managed by Fict"""
-    [print(obj.get_bundle()) for obj in FileObj.instances]
+    [print(obj.get_bundle()) for path, obj in FileObj.instances.items()]
 
 def check(args):
-    for obj in FileObj.instances:
+    for path, obj in FileObj.instances.items():
         if not obj.check_integrity():
             print('Failed Integrity Check: {}'.format(obj.path))
 
@@ -108,6 +108,6 @@ def main(args):
         sys.exit()
 
     #Write out what we have to disk.
-    write_db(args, json.dumps([obj.dump() for obj in FileObj.instances], sort_keys=False, indent=4))
+    write_db(args, json.dumps([obj.dump() for path, obj in FileObj.instances.items()], sort_keys=False, indent=4))
 
 
