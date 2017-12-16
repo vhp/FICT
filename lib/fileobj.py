@@ -18,8 +18,8 @@ class FileObj:
 
     def __init__(self, filetype, path, hash_type):
         FileObj.instances.append(self)
-        self.filetype = None
         self.path = path
+        self.filetype = None
         self.uuid = None
         self.status = 'pending'
         self.timestamp = None
@@ -32,6 +32,7 @@ class FileObj:
     def dump(self):
         """Dump elements for this object"""
         return {'path': self.path,
+                'filetype': self.filetype,
                 'uuid': self.uuid,
                 'status':   self.status,
                 'timestamp': str(self.timestamp),
@@ -41,7 +42,9 @@ class FileObj:
     @classmethod
     def load(cls, json_dict):
         """Recreate instance of FileObj"""
-        node = cls(json_dict['path'], json_dict['path'])
+        node = cls(json_dict['filetype'], json_dict['path'], json_dict['hash_type'])
+        node.path = json_dict['path']
+        node.filetype = json_dict['filetype']
         node.uuid = json_dict['uuid']
         node.status = json_dict['status']
         node.timestamp = None if json_dict['timestamp'] else datetime.strptime(json_dict['timestamp'], '%Y-%m-%d %H:%M:%S.%f')
@@ -69,7 +72,7 @@ class FileObj:
     def set_filetype(self, filetype):
         if filetype in ['file', 'directory']:
             self.filetype = filetype
-        else
+        else:
             print("Error: Wrong filetype ({}) for file".format(filetype, self.path))
 
     def set_hash(self):

@@ -28,7 +28,9 @@ def read_db(args):
                 data = json.load(json_db)
                 return data
             except ValueError:
-                return None
+                return json.loads('[]')
+    else:
+        return json.loads('[]')
 
 def init(args):
     """Initialize Fict project"""
@@ -62,7 +64,7 @@ def compute(args):
     """Compute hashes of all instances in FileObj.instances"""
     [obj.set_hash() for obj in FileObj.instances]
 
-def list(args):
+def get_list(args):
     """Print list of all files and their hashes managed by Fict"""
     [print(obj.get_bundle()) for obj in FileObj.instances]
 
@@ -76,8 +78,11 @@ def construct(args):
     try:
         for obj in read_db(args):
             FileObj.load(obj)
+    except KeyError as error:
+        sys.exit('JSON Key {} expected/unexpected in your fict_db. Check FileObJ schema'.format(error))
     except:
-        pass
+        print('fict_db reading exception: {}'.format(sys.exc_info()[0]))
+        raise
 
 def main(args):
 
@@ -96,9 +101,11 @@ def main(args):
     elif args['compute']:
         compute(args)
     elif args['list']:
-        list(args)
+        get_list(args)
+        sys.exit()
     elif args['check']:
         check(args)
+        sys.exit()
 
     #Write out what we have to disk.
     write_db(args, json.dumps([obj.dump() for obj in FileObj.instances], sort_keys=False, indent=4))
