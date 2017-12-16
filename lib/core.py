@@ -43,18 +43,18 @@ def walkfs(path):
     walked = []
     for root, directories, filenames in os.walk(path):
         for directory in directories:
-            walked.append(os.path.join(os.path.abspath(root), directory))
+            walked.append(('directory', os.path.join(os.path.abspath(root), directory)))
         for filename in filenames:
-            walked.append(os.path.join(os.path.abspath(root), filename))
+            walked.append(('file', os.path.join(os.path.abspath(root), filename)))
     return walked
 
 def add(args):
     """Create new instances of FileObjs"""
     if os.path.isfile(args['<path>']):
-        FileObj(args['<path>'], args['--hash-tool'])
+        FileObj('file', args['<path>'], args['--hash-tool'])
     elif os.path.isdir(args['<path>']):
-        for path in walkfs(args['<path>']):
-            FileObj(path, args['--hash-tool'])
+        for filetype, path in walkfs(args['<path>']):
+            FileObj(filetype, path, args['--hash-tool'])
     else:
         sys.exit('Not a valid path for ADD function.')
 

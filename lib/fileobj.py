@@ -16,8 +16,9 @@ from subprocess import PIPE
 class FileObj:
     instances = []
 
-    def __init__(self, path, hash_type):
+    def __init__(self, filetype, path, hash_type):
         FileObj.instances.append(self)
+        self.filetype = None
         self.path = path
         self.uuid = None
         self.status = 'pending'
@@ -26,6 +27,7 @@ class FileObj:
         self.hash = None
         #Setup this instance
         self.set_uuid()
+        self.set_filetype(filetype)
 
     def dump(self):
         """Dump elements for this object"""
@@ -63,6 +65,12 @@ class FileObj:
             return True
         else:
             return False
+
+    def set_filetype(self, filetype):
+        if filetype in ['file', 'directory']:
+            self.filetype = filetype
+        else
+            print("Error: Wrong filetype ({}) for file".format(filetype, self.path))
 
     def set_hash(self):
         """Call to compute the hash, and set the timestamp after"""
