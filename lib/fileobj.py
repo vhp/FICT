@@ -56,7 +56,7 @@ class FileObj:
     def compute_hash(self):
         """Compute the hash of the file defined in self.path. Returns hash if file or string 'directory' if directory"""
         if not os.path.isdir(self.path):
-            checksum_output = Popen(['sha512sum', self.path], stdout=PIPE).communicate()[0].decode('utf-8').partition(' ')[0]
+            checksum_output = Popen([self.hash_type, self.path], stdout=PIPE).communicate()[0].decode('utf-8').partition(' ')[0]
             return checksum_output.strip()
         else:
             return 'directory'
