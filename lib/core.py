@@ -10,6 +10,8 @@ import os
 import json
 from lib.fileobj import FileObj
 
+file_ignore_list = ['.fict', 'fict_db']
+
 def write_db(args, data):
     """Write the json database down to disk."""
     db_file = os.path.abspath('{}/{}'.format(args['--fict-dir'], args['--fict-db-name']))
@@ -52,11 +54,13 @@ def walkfs(path):
 
 def add(args):
     """Create new instances of FileObjs"""
-    if os.path.isfile(args['<path>']):
+    print(args['<path>'])
+    if os.path.isfile(args['<path>']) and os.path.isfile(args['<path>']) not in file_ignore_list:
         FileObj('file', args['<path>'], args['--hash-tool'])
     elif os.path.isdir(args['<path>']):
         for filetype, path in walkfs(args['<path>']):
-            FileObj(filetype, path, args['--hash-tool'])
+            if os.path.basename(os.path.normpath(path)) not in file_ignore_list:
+                FileObj(filetype, path, args['--hash-tool'])
     else:
         sys.exit('Not a valid path for ADD function.')
 
@@ -92,13 +96,14 @@ def main(args):
     elif not os.path.isdir(args['--fict-dir']):
         sys.exit('You must init a fict project first')
 
-    #Construct instances of FileObj's for later use.
+    # Construct instances of FileObj's for  use later in run.
     construct(args)
 
     # Conditional operations after initialization and construction.
     if args['add']:
         add(args)
-    elif args['compute']:
+        compute(args)
+    elif args['recompute']:
         compute(args)
     elif args['list']:
         get_list(args)

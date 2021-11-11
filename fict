@@ -10,7 +10,7 @@ Usage:
     fict [options]
     fict init [<path>] [options]
     fict add (<path>) [options]
-    fict compute [options]
+    fict recompute [options]
     fict list [options]
     fict check [options]
     fict (-h | --help)
