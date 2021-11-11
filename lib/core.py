@@ -103,16 +103,13 @@ def main(args):
     if args['add']:
         add(args)
         compute(args)
+        write_db(args, json.dumps([obj.dump() for path, obj in FileObj.instances.items()], sort_keys=False, indent=4))
     elif args['recompute']:
         compute(args)
+        write_db(args, json.dumps([obj.dump() for path, obj in FileObj.instances.items()], sort_keys=False, indent=4))
     elif args['list']:
         get_list(args)
         sys.exit()
     elif args['check']:
         check(args)
         sys.exit()
-
-    #Write out what we have to disk.
-    write_db(args, json.dumps([obj.dump() for path, obj in FileObj.instances.items()], sort_keys=False, indent=4))
-
-
