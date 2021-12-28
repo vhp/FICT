@@ -10,6 +10,7 @@ Usage:
     fict [options]
     fict init [<path>] [options]
     fict add (<path>) [options]
+    fict approve [options]
     fict recompute [options]
     fict list [options]
     fict check [options]
@@ -19,6 +20,8 @@ Generic options:
     --hash-tool=FILE            Hashing Tool        [default: sha512sum]
     --fict-dir=DIRECTORY        Fict Directory
     --fict-db-name=FILE         DB filename         [default: fict_db]
+    -y, --yes                   Agree ahead of time.
+    -v, --verbose               Verbose Output
     -h, --help                  Show Help
 """
 import sys

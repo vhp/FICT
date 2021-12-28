@@ -95,6 +95,10 @@ class FileObj:
         if self.timestamp == None:
             self.timestamp = datetime.now()
 
+    def get_status(self):
+        """Return the instances status"""
+        return self.status
+
     def get_timestamp(self):
         """Return the instances timestamp"""
         return self.timestamp
@@ -109,4 +113,4 @@ class FileObj:
 
     def get_bundle(self):
         """Return bundles (path, hash)"""
-        return '{},{}'.format(self.get_path(), self.get_hash())
+        return '{},{},{}'.format(self.get_path(), self.get_status(), self.get_hash())

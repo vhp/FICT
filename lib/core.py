@@ -8,12 +8,16 @@
 import sys
 import os
 import json
+import multiprocessing
 from lib.fileobj import FileObj
+from joblib import Parallel, delayed
 
+num_cores = multiprocessing.cpu_count()
 file_ignore_list = ['.fict', 'fict_db']
 
 def write_db(args, data):
     """Write the json database down to disk."""
+    print("writing db")
     db_file = os.path.abspath('{}/{}'.format(args['--fict-dir'], args['--fict-db-name']))
     try:
         with open(db_file, 'w') as json_db:
@@ -23,6 +27,7 @@ def write_db(args, data):
 
 def read_db(args):
     """Read the json database from disk in read only mode"""
+    print("reading db")
     db_file = os.path.abspath('{}/{}'.format(args['--fict-dir'], args['--fict-db-name']))
     if os.path.isfile(db_file):
         with open(db_file, 'r') as json_db:
@@ -64,9 +69,16 @@ def add(args):
     else:
         sys.exit('Not a valid path for ADD function.')
 
+def compute_runner(obj, args):
+    obj.set_hash()
+    print("Computed: {},{}".format(obj.get_path(), obj.get_hash()))
+    write_db(args, json.dumps([obj.dump() for path, obj in FileObj.instances.items()], sort_keys=False, indent=4))
+
 def compute(args):
     """Compute hashes of all instances in FileObj.instances"""
-    [obj.set_hash() for path, obj in FileObj.instances.items()]
+    #[obj.set_hash() for path, obj in FileObj.instances.items()]
+    # It's important to use prefer="threads" here as not using it uses processes and there's no ipc.
+    Parallel(n_jobs=num_cores, prefer="threads")(delayed(compute_runner)(obj, args) for _, obj in FileObj.instances.items())
 
 def get_list(args):
     """Print list of all files and their hashes managed by Fict"""
@@ -76,6 +88,15 @@ def check(args):
     for path, obj in FileObj.instances.items():
         if not obj.check_integrity():
             print('Failed Integrity Check: {}'.format(obj.path))
+
+def approve(args):
+    get_list(args)
+    if not args['--yes']:
+        print("\nYou must add -y/--yes command line option to: fict approve")
+        sys.exit(2)
+    else:
+        [obj.set_status("approved") for _, obj in FileObj.instances.items()]
+        write_db(args, json.dumps([obj.dump() for path, obj in FileObj.instances.items()], sort_keys=False, indent=4))
 
 def construct(args):
     """Reinitialize instances of FileObj via read_db"""
@@ -104,6 +125,8 @@ def main(args):
         add(args)
         compute(args)
         write_db(args, json.dumps([obj.dump() for path, obj in FileObj.instances.items()], sort_keys=False, indent=4))
+    elif args['approve']:
+        approve(args)
     elif args['recompute']:
         compute(args)
         write_db(args, json.dumps([obj.dump() for path, obj in FileObj.instances.items()], sort_keys=False, indent=4))
