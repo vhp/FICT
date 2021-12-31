@@ -81,30 +81,33 @@ class FileObj:
             logger.error("Error: Wrong filetype ({}) for file".format(filetype, self.path))
 
     def set_hash(self):
-        """Call to compute the hash, and set the timestamp after"""
+        """ Call to compute the hash, and set the timestamp after """
         self.hash = self.compute_hash()
         self.set_timestamp()
+        if self.hash:
+            self.set_status("computed")
 
     def set_uuid(self):
-        """set uuid of self"""
+        """ Set uuid of self """
         if self.uuid == None:
             self.uuid = str(uuid.uuid1())
 
-    def set_status(self, status_value):
-        """set task status of self"""
-        self.status = status_value
+    def set_status(self, status):
+        """ Set task status of self """
+        self.status = status
+        logger.debug("Status set to '{}' for file '{}'".format(status, self.path))
 
     def set_timestamp(self):
-        """set creation stamp of task"""
+        """ Set creation stamp of task """
         if self.timestamp == None:
             self.timestamp = datetime.now()
 
     def get_status(self):
-        """Return the instances status"""
+        """ Return the instances status """
         return self.status
 
     def get_timestamp(self):
-        """Return the instances timestamp"""
+        """ Return the instances timestamp """
         return self.timestamp
 
     def get_path(self):
@@ -112,9 +115,9 @@ class FileObj:
         return self.path
 
     def get_hash(self):
-        """Return the hash of the instances"""
+        """ Return the hash of the instances """
         return self.hash
 
     def get_bundle(self):
-        """Return bundles (path, hash)"""
+        """ Return bundles (path, status, hash) """
         return '{},{},{}'.format(self.get_path(), self.get_status(), self.get_hash())

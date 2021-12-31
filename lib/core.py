@@ -49,7 +49,7 @@ def init(args):
         os.makedirs(path, exist_ok=True)
         logger.info("New FICT project created at: {}".format(path))
     else:
-        logger.error("FICT project already exists at: {}".format(path))
+        sys.exit("FICT project already exists at: {}".format(path))
 
 def walkfs(path):
     walked = []
@@ -75,21 +75,27 @@ def add(args):
         sys.exit('Not a valid path for ADD function.')
 
 def compute_runner(obj, args):
-    obj.set_hash()
-    logger.debug("Computed {} for file {}".format(obj.get_hash(), obj.get_path()))
-    write_db(args, json.dumps([obj.dump() for path, obj in FileObj.instances.items()], sort_keys=False, indent=4))
+    """ The computation that happens per thread as dished out bu the compute function. """
+    if args['--recompute']:
+        obj.set_status('pending')
+    if obj.get_status() == 'pending':
+        obj.set_hash()
+        logger.debug("Computed {} for file {}".format(obj.get_hash(), obj.get_path()))
+        write_db(args, json.dumps([obj.dump() for path, obj in FileObj.instances.items()], sort_keys=False, indent=4))
+    else:
+        logger.debug("Checksum already set for file {}".format(obj.get_path()))
 
 def compute(args):
-    """Compute hashes of all instances in FileObj.instances"""
-    #[obj.set_hash() for path, obj in FileObj.instances.items()]
+    """ Compute hashes of all instances in FileObj.instances """
     # It's important to use prefer="threads" here as not using it uses processes and there's no ipc.
     Parallel(n_jobs=num_cores, prefer="threads")(delayed(compute_runner)(obj, args) for _, obj in FileObj.instances.items())
 
 def get_list(args):
-    """Print list of all files and their hashes managed by Fict"""
+    """ Print list of all files and their hashes managed by Fict """
     [print(obj.get_bundle()) for path, obj in FileObj.instances.items()]
 
 def check(args):
+    """ Check Checksums for all files """
     for path, obj in FileObj.instances.items():
         if not obj.check_integrity():
             logger.error('Failed Integrity Check: {}'.format(obj.path))
@@ -120,7 +126,7 @@ def setup_logging(args):
     logger.setLevel(logging.INFO)
     if args['--verbose']:
         logger.setLevel(logging.DEBUG)
-        print(logging.getLevelName(logger.getEffectiveLevel()))
+        logger.debug("Logging Level: {}".format(logging.getLevelName(logger.getEffectiveLevel())))
         logger.debug(args)
 
 def main(args):
@@ -138,11 +144,10 @@ def main(args):
     # Conditional operations after initialization and construction.
     if args['add']:
         add(args)
-        compute(args)
         write_db(args, json.dumps([obj.dump() for path, obj in FileObj.instances.items()], sort_keys=False, indent=4))
     elif args['approve']:
         approve(args)
-    elif args['recompute']:
+    elif args['compute']:
         compute(args)
         write_db(args, json.dumps([obj.dump() for path, obj in FileObj.instances.items()], sort_keys=False, indent=4))
     elif args['list']:
@@ -151,3 +156,4 @@ def main(args):
     elif args['check']:
         check(args)
         sys.exit()
+
