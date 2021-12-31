@@ -9,9 +9,12 @@ import uuid
 import json
 import os
 import sys
+import logging
 from datetime import datetime
 from subprocess import Popen
 from subprocess import PIPE
+
+logger = logging.getLogger('fict')
 
 class FileObj:
     instances = {}
@@ -29,6 +32,7 @@ class FileObj:
         #Setup this instance
         self.set_uuid()
         self.set_filetype(filetype)
+
 
     def dump(self):
         """Dump elements for this object"""
@@ -74,7 +78,7 @@ class FileObj:
         if filetype in ['file', 'directory']:
             self.filetype = filetype
         else:
-            print("Error: Wrong filetype ({}) for file".format(filetype, self.path))
+            logger.error("Error: Wrong filetype ({}) for file".format(filetype, self.path))
 
     def set_hash(self):
         """Call to compute the hash, and set the timestamp after"""
