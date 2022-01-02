@@ -9,19 +9,22 @@ import sys
 import os
 import json
 import logging
-import multiprocessing
-from lib.fileobj import FileObj
+import threading
 from joblib import Parallel, delayed
+from lib.fileobj import FileObj
 
-num_cores = multiprocessing.cpu_count()
-file_ignore_list = ['.fict', 'fict_db']
-
+file_ignore_list = ['.fict', 'fict_db', '@eaDir']
 logger = logging.getLogger('fict')
+
+counter = 1000
+counter_lock = threading.Lock()
+file_lock = threading.Lock()
+
 
 def write_db(args, data):
     """Write the json database down to disk."""
     db_file = os.path.abspath('{}/{}'.format(args['--fict-dir'], args['--fict-db-name']))
-    logger.debug("writing db: {}".format(db_file))
+    logger.info("writing db: {}".format(db_file))
     try:
         with open(db_file, 'w') as json_db:
             json_db.write(data)
@@ -60,54 +63,81 @@ def walkfs(path):
             walked.append(('file', os.path.join(os.path.abspath(root), filename)))
     return walked
 
+def file_already_exist(path):
+    return bool(any(path == opath for opath, _ in FileObj.instances.items()))
+
+def ignorable_file(path):
+    return bool(any(path.__contains__(pattern) for pattern in file_ignore_list))
+
 def add(args):
     """Create new instances of FileObjs"""
     logger.debug("Adding path: {}".format(args['<path>']))
-    if os.path.isfile(args['<path>']) and os.path.isfile(args['<path>']) not in file_ignore_list:
+    if os.path.isfile(args['<path>']) and not any(args['<path>'].__contains__(pattern) for pattern in file_ignore_list):
         FileObj('file', args['<path>'], args['--hash-tool'])
     elif os.path.isdir(args['<path>']):
         for filetype, path in walkfs(args['<path>']):
-            if os.path.basename(os.path.normpath(path)) not in file_ignore_list:
+            if not ignorable_file(path) or not file_already_exist(path):
                 FileObj(filetype, path, args['--hash-tool'])
-                logger.debug("Adding: {} ({})".format(path, filetype))
+                logger.info("Adding: {} ({})".format(path, filetype))
+            else:
+                logger.debug("Ignored/AlreadyAdded file: {}".format(path))
 
     else:
         sys.exit('Not a valid path for ADD function.')
 
 def compute_runner(obj, args):
     """ The computation that happens per thread as dished out bu the compute function. """
+    global counter
+    update_file = False
+    with counter_lock:
+        counter -= 1
+    if counter == 0:
+        counter = 1000
+        update_file = True
     if args['--recompute']:
         obj.set_status('pending')
     if obj.get_status() == 'pending':
         obj.set_hash()
         logger.debug("Computed {} for file {}".format(obj.get_hash(), obj.get_path()))
-        write_db(args, json.dumps([obj.dump() for path, obj in FileObj.instances.items()], sort_keys=False, indent=4))
+        if update_file:
+            with file_lock:
+                logger.debug("Have file lock, writing out to file")
+                write_db(args, json.dumps([obj.dump() for path, obj in FileObj.instances.items()], sort_keys=False, indent=4))
     else:
         logger.debug("Checksum already set for file {}".format(obj.get_path()))
 
 def compute(args):
     """ Compute hashes of all instances in FileObj.instances """
     # It's important to use prefer="threads" here as not using it uses processes and there's no ipc.
-    Parallel(n_jobs=num_cores, prefer="threads")(delayed(compute_runner)(obj, args) for _, obj in FileObj.instances.items())
+    Parallel(n_jobs=-2, prefer="threads")(delayed(compute_runner)(obj, args) for _, obj in FileObj.instances.items())
 
-def get_list(args):
+def get_list():
     """ Print list of all files and their hashes managed by Fict """
-    [print(obj.get_bundle()) for path, obj in FileObj.instances.items()]
+    [logger.info(obj.get_tuple()) for path, obj in FileObj.instances.items()]
 
-def check(args):
+def check():
     """ Check Checksums for all files """
-    for path, obj in FileObj.instances.items():
+    for _, obj in FileObj.instances.items():
         if not obj.check_integrity():
             logger.error('Failed Integrity Check: {}'.format(obj.path))
 
-def approve(args):
-    get_list(args)
-    if not args['--yes']:
-        logger.error("\nYou must add -y/--yes command line option to: fict approve")
-        sys.exit(2)
-    else:
-        [obj.set_status("approved") for _, obj in FileObj.instances.items()]
-        write_db(args, json.dumps([obj.dump() for path, obj in FileObj.instances.items()], sort_keys=False, indent=4))
+def status():
+    """ Get the status """
+    pending, computed, bad = 0, 1, 0
+    for path, obj in FileObj.instances.items():
+        _, o_status, _ = obj.get_tuple()
+        if o_status in 'pending':
+            pending += 1
+        elif o_status in 'computed':
+            computed += 1
+        else:
+            logger.error("Bad Data found check file: {}, {}".format(path, o_status))
+            bad += 1
+    logger.info("Pending Files: {}".format(pending))
+    logger.info("Computed Files: {}".format(computed))
+    logger.info("Computed %: {}%".format(round((computed/(computed+pending)) * 100, 2)))
+    if bad > 0:
+        logger.error("Bad Data: {}".format(bad))
 
 def construct(args):
     """Reinitialize instances of FileObj via read_db"""
@@ -126,11 +156,11 @@ def setup_logging(args):
     logger.setLevel(logging.INFO)
     if args['--verbose']:
         logger.setLevel(logging.DEBUG)
-        logger.debug("Logging Level: {}".format(logging.getLevelName(logger.getEffectiveLevel())))
+        logger.debug("Logging Level set to {}".format(logging.getLevelName(logger.getEffectiveLevel())))
         logger.debug(args)
 
 def main(args):
-
+    """ Main Function """
     #Initialization
     setup_logging(args)
     if args['init']:
@@ -145,15 +175,15 @@ def main(args):
     if args['add']:
         add(args)
         write_db(args, json.dumps([obj.dump() for path, obj in FileObj.instances.items()], sort_keys=False, indent=4))
-    elif args['approve']:
-        approve(args)
     elif args['compute']:
         compute(args)
         write_db(args, json.dumps([obj.dump() for path, obj in FileObj.instances.items()], sort_keys=False, indent=4))
     elif args['list']:
-        get_list(args)
+        get_list()
         sys.exit()
     elif args['check']:
-        check(args)
+        check()
         sys.exit()
-
+    elif args['status']:
+        status()
+        sys.exit()

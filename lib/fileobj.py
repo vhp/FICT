@@ -6,9 +6,7 @@
 #   License: Released under "Simplified BSD License" see LICENSE file
 #
 import uuid
-import json
 import os
-import sys
 import logging
 from datetime import datetime
 from subprocess import Popen
@@ -17,6 +15,7 @@ from subprocess import PIPE
 logger = logging.getLogger('fict')
 
 class FileObj:
+    """ Object structure """
     instances = {}
 
     def __init__(self, filetype, path, hash_type):
@@ -69,16 +68,14 @@ class FileObj:
         """Recheck integrity of file defined in self.path. Compare it to old/current hash return boolean with returns"""
         current_hash = self.hash
         new_hash = self.compute_hash()
-        if current_hash == new_hash:
-            return True
-        else:
-            return False
+        return bool(current_hash == new_hash)
 
     def set_filetype(self, filetype):
+        """ Set the filetype for object """
         if filetype in ['file', 'directory']:
             self.filetype = filetype
         else:
-            logger.error("Error: Wrong filetype ({}) for file".format(filetype, self.path))
+            logger.error("Error: Wrong filetype ({}) for file".format(filetype))
 
     def set_hash(self):
         """ Call to compute the hash, and set the timestamp after """
@@ -89,7 +86,7 @@ class FileObj:
 
     def set_uuid(self):
         """ Set uuid of self """
-        if self.uuid == None:
+        if self.uuid is None:
             self.uuid = str(uuid.uuid1())
 
     def set_status(self, status):
@@ -99,7 +96,7 @@ class FileObj:
 
     def set_timestamp(self):
         """ Set creation stamp of task """
-        if self.timestamp == None:
+        if self.timestamp is None:
             self.timestamp = datetime.now()
 
     def get_status(self):
@@ -118,6 +115,6 @@ class FileObj:
         """ Return the hash of the instances """
         return self.hash
 
-    def get_bundle(self):
-        """ Return bundles (path, status, hash) """
-        return '{},{},{}'.format(self.get_path(), self.get_status(), self.get_hash())
+    def get_tuple(self):
+        """ Return tuple containing (path, status, hash) """
+        return (self.get_path(), self.get_status(), self.get_hash())
