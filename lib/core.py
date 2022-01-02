@@ -64,9 +64,11 @@ def walkfs(path):
     return walked
 
 def file_already_exist(path):
+    """ Is the path already represented in FileObj """
     return bool(any(path == opath for opath, _ in FileObj.instances.items()))
 
 def ignorable_file(path):
+    """ Is the path in the ingnored file list? """
     return bool(any(path.__contains__(pattern) for pattern in file_ignore_list))
 
 def add(args):
