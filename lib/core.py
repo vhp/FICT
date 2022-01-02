@@ -74,11 +74,11 @@ def ignorable_file(path):
 def add(args):
     """Create new instances of FileObjs"""
     logger.debug("Adding path: {}".format(args['<path>']))
-    if os.path.isfile(args['<path>']) and not any(args['<path>'].__contains__(pattern) for pattern in file_ignore_list):
+    if os.path.isfile(args['<path>']) and not ignorable_file(args['<path>']):
         FileObj('file', args['<path>'], args['--hash-tool'])
     elif os.path.isdir(args['<path>']):
         for filetype, path in walkfs(args['<path>']):
-            if not ignorable_file(path) or not file_already_exist(path):
+            if not (ignorable_file(path) or file_already_exist(path)):
                 FileObj(filetype, path, args['--hash-tool'])
                 logger.info("Adding: {} ({})".format(path, filetype))
             else:
