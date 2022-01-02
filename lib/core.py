@@ -55,13 +55,12 @@ def init(args):
         sys.exit("FICT project already exists at: {}".format(path))
 
 def walkfs(path):
-    walked = []
+    """ WalkFS file generator """
     for root, directories, filenames in os.walk(path):
         for directory in directories:
-            walked.append(('directory', os.path.join(os.path.abspath(root), directory)))
+            yield(('directory', os.path.join(os.path.abspath(root), directory)))
         for filename in filenames:
-            walked.append(('file', os.path.join(os.path.abspath(root), filename)))
-    return walked
+            yield(('file', os.path.join(os.path.abspath(root), filename)))
 
 def file_already_exist(path):
     """ Is the path already represented in FileObj """
