@@ -21,8 +21,9 @@ counter_lock = threading.Lock()
 file_lock = threading.Lock()
 
 
-def write_db(args, data):
+def write_db(args):
     """Write the json database down to disk."""
+    data = json.dumps([obj.dump() for path, obj in FileObj.instances.items()], sort_keys=False, indent=4)
     db_file = os.path.abspath('{}/{}'.format(args['--fict-dir'], args['--fict-db-name']))
     logger.info("writing db: {}".format(db_file))
     try:
@@ -103,7 +104,7 @@ def compute_runner(obj, args):
         if update_file:
             with file_lock:
                 logger.debug("Have file lock, writing out to file")
-                write_db(args, json.dumps([obj.dump() for path, obj in FileObj.instances.items()], sort_keys=False, indent=4))
+                write_db(args)
     else:
         logger.debug("Checksum already set for file {}".format(obj.get_path()))
 
@@ -175,10 +176,10 @@ def main(args):
     # Conditional operations after initialization and construction.
     if args['add']:
         add(args)
-        write_db(args, json.dumps([obj.dump() for path, obj in FileObj.instances.items()], sort_keys=False, indent=4))
+        write_db(args)
     elif args['compute']:
         compute(args)
-        write_db(args, json.dumps([obj.dump() for path, obj in FileObj.instances.items()], sort_keys=False, indent=4))
+        write_db(args)
     elif args['list']:
         get_list()
         sys.exit()
