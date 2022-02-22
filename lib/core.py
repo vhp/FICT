@@ -88,7 +88,7 @@ def add(args):
         sys.exit('Not a valid path for ADD function.')
 
 def compute_runner(obj, args):
-    """ The computation that happens per thread as dished out bu the compute function. """
+    """ The computation that happens per thread as dished out by the compute function. """
     global counter
     update_file = False
     with counter_lock:

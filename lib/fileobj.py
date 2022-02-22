@@ -26,6 +26,7 @@ class FileObj:
         self.uuid = None
         self.status = 'pending'
         self.timestamp = None
+        self.crc32 = None
         self.hash_type = hash_type
         self.hash = None
         #Setup this instance
@@ -40,6 +41,7 @@ class FileObj:
                 'uuid': self.uuid,
                 'status':   self.status,
                 'timestamp': str(self.timestamp),
+                'crc32': self.crc32,
                 'hash_type': self.hash_type,
                 'hash': self.hash}
 
@@ -52,14 +54,15 @@ class FileObj:
         node.uuid = json_dict['uuid']
         node.status = json_dict['status']
         node.timestamp = None if json_dict['timestamp'] else datetime.strptime(json_dict['timestamp'], '%Y-%m-%d %H:%M:%S.%f')
+        node.crc32 = json_dict['crc32']
         node.hash_type = json_dict['hash_type']
         node.hash = json_dict['hash']
         return node
 
-    def compute_hash(self):
+    def compute_hash(self, hash_tool_bin):
         """Compute the hash of the file defined in self.path. Returns hash if file or string 'directory' if directory"""
         if not os.path.isdir(self.path):
-            checksum_output = Popen([self.hash_type, self.path], stdout=PIPE).communicate()[0].decode('utf-8').partition(' ')[0]
+            checksum_output = Popen([hash_tool_bin, self.path], stdout=PIPE).communicate()[0].decode('utf-8').partition(' ')[0]
             return checksum_output.strip()
         else:
             return 'directory'
@@ -79,7 +82,8 @@ class FileObj:
 
     def set_hash(self):
         """ Call to compute the hash, and set the timestamp after """
-        self.hash = self.compute_hash()
+        self.hash = self.compute_hash(self.hash_type)
+        self.crc32 = self.compute_hash('crc32')
         self.set_timestamp()
         if self.hash:
             self.set_status("computed")
