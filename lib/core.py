@@ -25,7 +25,7 @@ def write_db(args):
     """Write the json database down to disk."""
     data = json.dumps([obj.dump() for path, obj in FileObj.instances.items()], sort_keys=False, indent=4)
     db_file = os.path.abspath('{}/{}'.format(args['--fict-dir'], args['--fict-db-name']))
-    logger.info("writing db: {}".format(db_file))
+    logger.debug("writing out db @ {}".format(db_file))
     try:
         with open(db_file, 'w') as json_db:
             json_db.write(data)
@@ -80,7 +80,7 @@ def add(args):
         for filetype, path in walkfs(args['<path>']):
             if not (ignorable_file(path) or file_already_exist(path)):
                 FileObj(filetype, path, args['--hash-tool'])
-                logger.info("Adding: {} ({})".format(path, filetype))
+                logger.debug("Adding: {} ({})".format(path, filetype))
             else:
                 logger.debug("Ignored/AlreadyAdded file: {}".format(path))
 
@@ -100,10 +100,8 @@ def compute_runner(obj, args):
         obj.set_status('pending')
     if obj.get_status() == 'pending':
         obj.set_hash()
-        logger.debug("\t - {}: {}".format(obj.get_hash_bin(), obj.get_hash()))
         if update_file:
             with file_lock:
-                logger.debug("Have file lock, writing out to file")
                 write_db(args)
     else:
         logger.debug("Checksum already set for file {}".format(obj.get_path()))
@@ -111,6 +109,8 @@ def compute_runner(obj, args):
 def compute(args):
     """ Compute hashes of all instances in FileObj.instances """
     # It's important to use prefer="threads" here as not using it uses processes and there's no ipc.
+    # Here we use n_jobs=-2 as to ask the system for an acceptable number based on cpu. Using a higher number just
+    # creates high cpu time for iowait and software interrupts.
     Parallel(n_jobs=-2, prefer="threads")(delayed(compute_runner)(obj, args) for _, obj in FileObj.instances.items())
 
 def get_list():
@@ -120,11 +120,12 @@ def get_list():
 def check():
     """ Check Checksums for all files """
     for _, obj in FileObj.instances.items():
-        obj.check_integrity()
+        if not obj.check_integrity():
+            logger.error('{}: Failed Integrity Check'.format(obj.path))
 
 def status():
     """ Get the status """
-    pending, computed, bad = 0, 1, 0
+    pending, computed, bad = 0, 0, 0
     for path, obj in FileObj.instances.items():
         _, o_status, _ = obj.get_tuple()
         if o_status in 'pending':

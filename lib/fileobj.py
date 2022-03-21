@@ -68,14 +68,7 @@ class FileObj:
         """Recheck integrity of file defined in self.path. Compare it to old/current hash return boolean with returns"""
         current_hash = self.hash
         new_hash = self.compute_hash(self.hash_bin)
-        status = bool(current_hash == new_hash)
-        if status:
-            logger.debug('{}: Passed Integrity Check'.format(self.path))
-            logger.debug('  ({} ==\n   {})'.format(current_hash, new_hash))
-        else:
-            logger.error('{}: Failed Integrity Check'.format(self.path))
-            logger.debug('  ({} !=\n   {})'.format(current_hash, new_hash))
-        return status
+        return bool(current_hash == new_hash)
 
     def set_filetype(self, filetype):
         """ Set the filetype for object """
@@ -99,7 +92,9 @@ class FileObj:
     def set_status(self, status):
         """ Set task status of self """
         self.status = status
-        logger.debug("Status set to '{}' for file '{}'".format(status, self.path))
+        if self.filetype in 'file':
+            # Let's not print message when dealing with directory.
+            logger.debug("- '{}' {} as\n\t {}".format(self.path, status, self.hash))
 
     def set_timestamp(self):
         """ Set creation stamp of task """

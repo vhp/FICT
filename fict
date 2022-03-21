@@ -18,11 +18,11 @@ Usage:
 
 Generic options:
     --hash-tool=FILE            Hashing Tool        [default: sha512sum]
-    --fict-dir=DIRECTORY        Fict Directory
+    --fict-dir=DIRECTORY        Path of fict Directory .fict
     --fict-db-name=FILE         DB filename         [default: fict_db]
     --recompute                 Recompute Checksums (By Force)
     -y, --yes                   Agree ahead of time.
-    -v, --verbose               Verbose Output
+    -v, --verbose               Verbos/Debug Output
     -h, --help                  Show Help
 """
 import sys
