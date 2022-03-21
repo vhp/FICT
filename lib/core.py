@@ -88,7 +88,7 @@ def add(args):
         sys.exit('Not a valid path for ADD function.')
 
 def compute_runner(obj, args):
-    """ The computation that happens per thread as dished out bu the compute function. """
+    """ The computation that happens per thread as dished out by the compute function. """
     global counter
     update_file = False
     with counter_lock:
@@ -100,7 +100,7 @@ def compute_runner(obj, args):
         obj.set_status('pending')
     if obj.get_status() == 'pending':
         obj.set_hash()
-        logger.debug("Computed {} for file {}".format(obj.get_hash(), obj.get_path()))
+        logger.debug("\t - {}: {}".format(obj.get_hash_bin(), obj.get_hash()))
         if update_file:
             with file_lock:
                 logger.debug("Have file lock, writing out to file")
@@ -120,8 +120,7 @@ def get_list():
 def check():
     """ Check Checksums for all files """
     for _, obj in FileObj.instances.items():
-        if not obj.check_integrity():
-            logger.error('Failed Integrity Check: {}'.format(obj.path))
+        obj.check_integrity()
 
 def status():
     """ Get the status """
