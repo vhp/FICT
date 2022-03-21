@@ -8,7 +8,7 @@
 """
 Usage:
     fict [options]
-    fict init [<path>] [options]
+    fict init [options]
     fict add (<path>) [options]
     fict status
     fict compute [options]

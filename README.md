@@ -27,3 +27,6 @@ b2sum is faster but not as available. crc32 is simple but may take longer than
 all even though it's supposed to be faster. Note that if your fict-db is defined
 to use one tool and you change it. The software will get
 confused.
+
+The fict_db is written out every so often. At the time of writing this at
+around every 1000 computations. This can be changed.
