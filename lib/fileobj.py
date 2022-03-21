@@ -103,6 +103,10 @@ class FileObj:
         if self.timestamp is None:
             self.timestamp = datetime.now()
 
+    def get_crc32(self):
+        """ Return the crc32 hash """
+        return self.crc32
+
     def get_status(self):
         """ Return the instances status """
         return self.status
@@ -118,6 +122,10 @@ class FileObj:
     def get_hash(self):
         """ Return the hash of the instances """
         return self.hash
+
+    def get_hash_type(self):
+        """ Return the hash type or tool """
+        return self.hash_type
 
     def get_tuple(self):
         """ Return tuple containing (path, status, hash) """
