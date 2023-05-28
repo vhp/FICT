@@ -51,9 +51,9 @@ def init(args):
     path = args['--fict-dir']
     if not os.path.isdir(path):
         os.makedirs(path, exist_ok=True)
-        logger.info("New FICT project created at: {}".format(path))
+        logger.info("FICT DB created at: {}".format(path))
     else:
-        sys.exit("FICT project already exists at: {}".format(path))
+        sys.exit("FICT DB already exists at: {}".format(path))
 
 def walkfs(path):
     """ WalkFS file generator """
@@ -100,6 +100,7 @@ def compute_runner(obj, args):
         obj.set_status('pending')
     if obj.get_status() == 'pending':
         obj.set_hash()
+        logger.debug("\t - blake2: {} \n\t - {}: {}".format(obj.get_blake2(), obj.get_hash_type(), obj.get_hash()))
         if update_file:
             with file_lock:
                 write_db(args)
