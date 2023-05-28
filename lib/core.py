@@ -100,7 +100,7 @@ def compute_runner(obj, args):
         obj.set_status('pending')
     if obj.get_status() == 'pending':
         obj.set_hash()
-        logger.debug("\t - crc32: {} \n\t - {}: {}".format(obj.get_crc32(), obj.get_hash_type(), obj.get_hash()))
+        logger.debug("\t - blake2: {} \n\t - {}: {}".format(obj.get_blake2(), obj.get_hash_type(), obj.get_hash()))
         if update_file:
             with file_lock:
                 logger.debug("Have file lock, writing out to file")

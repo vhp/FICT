@@ -26,7 +26,7 @@ class FileObj:
         self.uuid = None
         self.status = 'pending'
         self.timestamp = None
-        self.crc32 = None
+        self.standard_hash = None
         self.hash_type = hash_type
         self.hash = None
         #Setup this instance
@@ -41,7 +41,7 @@ class FileObj:
                 'uuid': self.uuid,
                 'status':   self.status,
                 'timestamp': str(self.timestamp),
-                'crc32': self.crc32,
+                'standard_hash': self.standard_hash,
                 'hash_type': self.hash_type,
                 'hash': self.hash}
 
@@ -54,7 +54,7 @@ class FileObj:
         node.uuid = json_dict['uuid']
         node.status = json_dict['status']
         node.timestamp = None if json_dict['timestamp'] else datetime.strptime(json_dict['timestamp'], '%Y-%m-%d %H:%M:%S.%f')
-        node.crc32 = json_dict['crc32']
+        node.standard_hash = json_dict['standard_hash']
         node.hash_type = json_dict['hash_type']
         node.hash = json_dict['hash']
         return node
@@ -83,7 +83,7 @@ class FileObj:
     def set_hash(self):
         """ Call to compute the hash, and set the timestamp after """
         self.hash = self.compute_hash(self.hash_type)
-        self.crc32 = self.compute_hash('crc32')
+        self.standard_hash = self.compute_hash('b2sum') #Blake2
         self.set_timestamp()
         if self.hash:
             self.set_status("computed")
@@ -103,9 +103,9 @@ class FileObj:
         if self.timestamp is None:
             self.timestamp = datetime.now()
 
-    def get_crc32(self):
-        """ Return the crc32 hash """
-        return self.crc32
+    def get_standard_hash(self):
+        """ Return the standard_hash, usually Blake2 """
+        return self.standard_hash
 
     def get_status(self):
         """ Return the instances status """
