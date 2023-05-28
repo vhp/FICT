@@ -51,9 +51,9 @@ def init(args):
     path = args['--fict-dir']
     if not os.path.isdir(path):
         os.makedirs(path, exist_ok=True)
-        logger.info("New FICT project created at: {}".format(path))
+        logger.info("FICT DB created at: {}".format(path))
     else:
-        sys.exit("FICT project already exists at: {}".format(path))
+        sys.exit("FICT DB already exists at: {}".format(path))
 
 def walkfs(path):
     """ WalkFS file generator """

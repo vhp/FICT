@@ -27,6 +27,7 @@ class FileObj:
         self.status = 'pending'
         self.timestamp = None
         self.standard_hash = None
+        self.standard_type = "b2sum"
         self.hash_type = hash_type
         self.hash = None
         #Setup this instance
@@ -42,6 +43,7 @@ class FileObj:
                 'status':   self.status,
                 'timestamp': str(self.timestamp),
                 'standard_hash': self.standard_hash,
+                'standard_type': self.standard_type,
                 'hash_type': self.hash_type,
                 'hash': self.hash}
 
@@ -55,6 +57,7 @@ class FileObj:
         node.status = json_dict['status']
         node.timestamp = None if json_dict['timestamp'] else datetime.strptime(json_dict['timestamp'], '%Y-%m-%d %H:%M:%S.%f')
         node.standard_hash = json_dict['standard_hash']
+        node.standard_hash = json_dict['standard_type']
         node.hash_type = json_dict['hash_type']
         node.hash = json_dict['hash']
         return node
@@ -83,7 +86,7 @@ class FileObj:
     def set_hash(self):
         """ Call to compute the hash, and set the timestamp after """
         self.hash = self.compute_hash(self.hash_type)
-        self.standard_hash = self.compute_hash('b2sum') #Blake2
+        self.standard_hash = self.compute_hash(self.standard_type)
         self.set_timestamp()
         if self.hash:
             self.set_status("computed")
