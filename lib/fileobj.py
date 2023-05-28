@@ -29,7 +29,6 @@ class FileObj:
         self.standard_hash = None
         self.standard_bin = "b2sum"
         self.hash_bin = hash_bin
-        self.hash_type = hash_type
         self.hash = None
         #Setup this instance
         self.set_uuid()

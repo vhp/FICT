@@ -48,7 +48,7 @@ def read_db(args):
 
 def init(args):
     """Initialize Fict project"""
-    path = os.path.expanduser(args['--fict-dir'])
+    path = args['--fict-dir']
     if not os.path.isdir(path):
         os.makedirs(path, exist_ok=True)
         logger.info("FICT DB created at: {}".format(path))
@@ -83,9 +83,8 @@ def add(args):
                 logger.debug("Adding: {} ({})".format(path, filetype))
             else:
                 logger.debug("Ignored/AlreadyAdded file: {}".format(path))
-
     else:
-        sys.exit('Not a valid path for ADD function.')
+        sys.exit('Not a valid path for add')
 
 def compute_runner(obj, args):
     """ The computation that happens per thread as dished out by the compute function. """
@@ -100,7 +99,7 @@ def compute_runner(obj, args):
         obj.set_status('pending')
     if obj.get_status() == 'pending':
         obj.set_hash()
-        logger.debug("\t - blake2: {} \n\t - {}: {}".format(obj.get_blake2(), obj.get_hash_type(), obj.get_hash()))
+        logger.debug("\t - blake2: {} \n\t - {}: {}".format(obj.get_standard_hash(), obj.get_hash_bin(), obj.get_hash()))
         if update_file:
             with file_lock:
                 write_db(args)
@@ -126,7 +125,7 @@ def check():
 
 def status():
     """ Get the status """
-    pending, computed, bad = 0, 0, 0
+    pending, computed,percent, bad = 0, 0, 0, 0
     for path, obj in FileObj.instances.items():
         _, o_status, _ = obj.get_tuple()
         if o_status in 'pending':
@@ -138,7 +137,12 @@ def status():
             bad += 1
     logger.info("Pending Files: {}".format(pending))
     logger.info("Computed Files: {}".format(computed))
-    logger.info("Computed %: {}%".format(round((computed/(computed+pending)) * 100, 2)))
+    try:
+        percent = round(computed/(computed + pending) * 100, 2)
+    except ZeroDivisionError:
+        logger.info("Computed %: {}%".format(0))
+    else:
+        logger.info("Computed %: {}%".format(percent))
     if bad > 0:
         logger.error("Bad Data: {}".format(bad))
 
