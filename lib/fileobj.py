@@ -71,11 +71,18 @@ class FileObj:
         else:
             return 'directory'
 
-    def check_integrity(self):
+    def check_integrity(self, mode):
         """Recheck integrity of file defined in self.path. Compare it to old/current hash return boolean with returns"""
-        current_hash = self.hash
-        new_hash = self.compute_hash(self.hash_bin)
-        return bool(current_hash == new_hash)
+        if mode == 'standard':
+            current_standard_hash = self.standard_hash
+            new_standard_hash = self.compute_hash(self.standard_bin)
+            return bool(current_standard_hash == new_standard_hash)
+        elif mode == 'secondary':
+            current_hash = self.hash
+            new_hash = self.compute_hash(self.hash_bin)
+            return bool(current_hash == new_hash)
+        else:
+            return False
 
     def set_filetype(self, filetype):
         """ Set the filetype for object """

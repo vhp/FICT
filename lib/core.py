@@ -120,8 +120,12 @@ def get_list():
 def check():
     """ Check Checksums for all files """
     for _, obj in FileObj.instances.items():
-        if not obj.check_integrity():
-            logger.error('{}: Failed Integrity Check'.format(obj.path))
+        if not obj.check_integrity(mode='standard'):
+            logger.error('{}: Failed Standard Integrity Check via {}'.format(obj.path, obj.standard_bin))
+            if not obj.check_integrity(mode='secondary'):
+                logger.error('{}: Failed Integrity Check via {}'.format(obj.path, obj.hash_bin))
+            else:
+                logger.info('{}: Passed secondary Integrity Check via {} but failed first'.format(obj.path, obj.hash_bin))
 
 def status():
     """ Get the status """
