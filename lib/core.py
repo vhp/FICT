@@ -48,7 +48,7 @@ def read_db(args):
 
 def init(args):
     """Initialize Fict project"""
-    path = args['--fict-dir']
+    path = os.path.expanduser(args['--fict-dir'])
     if not os.path.isdir(path):
         os.makedirs(path, exist_ok=True)
         logger.info("FICT DB created at: {}".format(path))

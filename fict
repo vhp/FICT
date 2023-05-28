@@ -18,7 +18,7 @@ Usage:
 
 Generic options:
     --hash-tool=FILE            Hashing Tool        [default: sha512sum]
-    --fict-dir=DIRECTORY        Path of fict Directory .fict
+    --fict-dir=DIRECTORY        Path of fict Directory [default: ~/.fict]
     --fict-db-name=FILE         DB filename         [default: fict_db]
     --recompute                 Recompute Checksums (By Force)
     -y, --yes                   Agree ahead of time.
