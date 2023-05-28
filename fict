@@ -34,6 +34,5 @@ fict_dir_name_default = '.fict'
 
 if __name__ == '__main__':
     args = docopt(__doc__)
-    if not args['--fict-dir']:
-        args['--fict-dir'] = '{}/{}'.format(os.getcwd(), fict_dir_name_default)
+    args['--fict-dir'] = os.path.expanduser(args['--fict-dir'])
     sys.exit(core.main(args))
