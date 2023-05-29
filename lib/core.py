@@ -22,7 +22,7 @@ file_ignore_list = ['.fict', 'fict_db', '@eaDir']
 logger = logging.getLogger('fict')
 
 counter = 1000
-counter_lock = threading.Lock()
+COUNTER_LOCK = threading.Lock()
 FILE_LOCK = threading.Lock()
 
 
@@ -96,7 +96,7 @@ def compute_runner(obj, args):
     """ The computation that happens per thread as dished out by the compute function. """
     global counter
     update_file = False
-    with counter_lock:
+    with COUNTER_LOCK:
         counter -= 1
     if counter == 0:
         counter = 1000
