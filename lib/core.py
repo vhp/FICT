@@ -5,6 +5,9 @@
 #   Title: FICT
 #   License: Released under "Simplified BSD License" see LICENSE file
 #
+"""
+Functions relating to the manipulation of Fileobj's.
+"""
 import json
 import logging
 import os
@@ -153,7 +156,7 @@ def check(args):
 
 def status():
     """ Printout the status """
-    pending, computed,percent, bad = 0, 0, 0, 0
+    pending, computed, percent, bad = 0, 0, 0, 0
     for path, obj in FileObj.instances.items():
         _, o_status, _ = obj.get_tuple()
         if o_status in 'pending':

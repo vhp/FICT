@@ -5,6 +5,11 @@
 #   Title: FICT
 #   License: Released under "Simplified BSD License" see LICENSE file
 #
+"""
+Definition of the FileObj class which is called from core.py.
+All class operations relating to instances configurations, getters
+setters, etc should go in here
+"""
 import logging
 import os
 import uuid
