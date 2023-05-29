@@ -99,7 +99,7 @@ class FileObj:
         self.hash = self.compute_hash(self.hash_bin)
         self.standard_hash = self.compute_hash(self.standard_bin)
         self.set_timestamp()
-        if self.hash:
+        if self.hash and self.standard_hash:
             self.set_status("computed")
 
     def set_uuid(self):

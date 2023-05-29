@@ -143,6 +143,8 @@ def check(args):
     instances = searched_instances(args)
     with alive_bar(len(instances), enrich_print=False) as bar:
         for _, obj in instances:
+            if obj.status not in "computed":
+                continue
             if not obj.check_integrity(mode='standard'):
                 logger.error('std_FAIL[%s]: %s', obj.standard_bin, obj.path)
                 if not obj.check_integrity(mode='secondary'):
