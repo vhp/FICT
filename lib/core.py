@@ -5,10 +5,11 @@
 #   Title: FICT
 #   License: Released under "Simplified BSD License" see LICENSE file
 #
-import sys
-import os
 import json
 import logging
+import os
+import re
+import sys
 import threading
 from joblib import Parallel, delayed
 from lib.fileobj import FileObj
@@ -117,15 +118,24 @@ def get_list():
     """ Print list of all files and their hashes managed by Fict """
     [logger.info(obj.get_tuple()) for path, obj in FileObj.instances.items()]
 
-def check():
+def searched_instances(args):
+    """Search instances in FileObj.instances.items() and return the ones that don't match args['<path>']"""
+    re_pattern = re.compile('^{}'.format(args['<path>']))
+    filtered_objects = [(path, obj) for path, obj in FileObj.instances.items() if re_pattern.match(obj.path)]
+    logger.debug("{} of {} total instances match inputted pattern '{}'".format(len(filtered_objects), len(FileObj.instances.items()), args['<path>']))
+    return filtered_objects
+
+def check(args):
     """ Check Checksums for all files """
-    for _, obj in FileObj.instances.items():
+    for _, obj in searched_instances(args):
         if not obj.check_integrity(mode='standard'):
-            logger.error('{}: Failed Standard Integrity Check via {}'.format(obj.path, obj.standard_bin))
+            logger.error('std_FAIL[{}]: {}'.format(obj.standard_bin, obj.path))
             if not obj.check_integrity(mode='secondary'):
-                logger.error('{}: Failed Integrity Check via {}'.format(obj.path, obj.hash_bin))
+                logger.error('2nd_FAIL[{}]: {}'.format(obj.hash_bin, obj.path))
             else:
-                logger.info('{}: Passed secondary Integrity Check via {} but failed first'.format(obj.path, obj.hash_bin))
+                logger.info('{}: \n\tPassed secondary integrity check ({}) but failed first ({})'.format(obj.path, obj.hash_bin, obj.standard_bin))
+        else:
+            logger.debug('PASS[{}]: {}'.format(obj.standard_bin, obj.path))
 
 def status():
     """ Get the status """
@@ -193,7 +203,7 @@ def main(args):
         get_list()
         sys.exit()
     elif args['check']:
-        check()
+        check(args)
         sys.exit()
     elif args['status']:
         status()

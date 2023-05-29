@@ -5,12 +5,12 @@
 #   Title: FICT
 #   License: Released under "Simplified BSD License" see LICENSE file
 #
-import uuid
-import os
 import logging
+import os
+import uuid
 from datetime import datetime
-from subprocess import Popen
 from subprocess import PIPE
+from subprocess import Popen
 
 logger = logging.getLogger('fict')
 
