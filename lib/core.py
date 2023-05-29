@@ -23,7 +23,7 @@ logger = logging.getLogger('fict')
 
 counter = 1000
 counter_lock = threading.Lock()
-file_lock = threading.Lock()
+FILE_LOCK = threading.Lock()
 
 
 def write_db(args):
@@ -107,7 +107,7 @@ def compute_runner(obj, args):
         obj.set_hash()
         logger.debug("\t - blake2: %s \n\t - %s: %s", obj.get_standard_hash(), obj.get_hash_bin(), obj.get_hash())
         if update_file:
-            with file_lock:
+            with FILE_LOCK:
                 write_db(args)
     else:
         logger.debug("Checksum already set for file %s", obj.get_path())
@@ -136,8 +136,7 @@ def searched_instances(args):
     logger.debug("%s of %s total instances match inputted pattern '%s'", len(filtered_objects), len(FileObj.instances.items()), args['<path>'])
     if len(filtered_objects) > 0:
         return filtered_objects
-    else:
-        return FileObj.instances.items()
+    return FileObj.instances.items()
 
 def check(args):
     """ Check Checksums for all files """
