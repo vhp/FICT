@@ -17,9 +17,9 @@ Usage:
     fict (-h | --help)
 
 Generic options:
-    --fict-db-name=FILE         DB filename.         [default: fict_db]
+    --fict-db-name=FILE         DB filename.            [default: fict_db]
     --fict-dir=DIRECTORY        Path of fict Directory. [default: ~/.fict]
-    --hash-tool=FILE            Hashing Tool        [default: sha512sum]
+    --hash-tool=FILE            Hashing Tool            [default: sha512sum]
     --recompute                 Recompute Checksums (By Force)
     -y, --yes                   Agree ahead of time.
     -v, --verbose               Verbos/Debug Output.
@@ -29,8 +29,6 @@ import sys
 import os
 from docopt import docopt
 from lib import core
-
-fict_dir_name_default = '.fict'
 
 if __name__ == '__main__':
     args = docopt(__doc__)

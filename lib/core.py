@@ -25,7 +25,8 @@ file_lock = threading.Lock()
 
 def write_db(args):
     """Write the json database down to disk."""
-    data = json.dumps([obj.dump() for path, obj in FileObj.instances.items()], sort_keys=False, indent=4)
+    data = json.dumps([obj.dump() for path, obj in FileObj.instances.items()],
+                      sort_keys=False, indent=4)
     db_file = os.path.abspath('{}/{}'.format(args['--fict-dir'], args['--fict-db-name']))
     logger.debug("writing out db @ {}".format(db_file))
     try:
@@ -110,11 +111,15 @@ def compute_runner(obj, args):
 
 def compute(args):
     """ Compute hashes of all instances in FileObj.instances """
+    # The alive_it helper here automatically gets a count and gives us a progress bar.
+    # The progress bar is not always perfect.
+    #
+    bar_instances = alive_it(FileObj.instances.items(), enrich_print=False)
+
     # It's important to use prefer="threads" here as not using it uses processes and there's no ipc.
     # Here we use n_jobs=-2 as to ask the system for an acceptable number based on cpu. Using a higher number just
     # creates high cpu time for iowait and software interrupts.
-    # The alive_it helper here automatically gets a count and gives us a progress bar.
-    bar_instances = alive_it(FileObj.instances.items(), enrich_print=False)
+    #
     Parallel(n_jobs=-2, prefer="threads")(delayed(compute_runner)(obj, args) for _, obj in bar_instances)
 
 def get_list():
@@ -133,9 +138,9 @@ def searched_instances(args):
 
 def check(args):
     """ Check Checksums for all files """
-    si = searched_instances(args)
-    with alive_bar(len(si), enrich_print=False) as bar:
-        for _, obj in si:
+    instances = searched_instances(args)
+    with alive_bar(len(instances), enrich_print=False) as bar:
+        for _, obj in instances:
             if not obj.check_integrity(mode='standard'):
                 logger.error('std_FAIL[{}]: {}'.format(obj.standard_bin, obj.path))
                 if not obj.check_integrity(mode='secondary'):
@@ -144,10 +149,10 @@ def check(args):
                     logger.info('{}: \n\tPassed secondary integrity check ({}) but failed first ({})'.format(obj.path, obj.hash_bin, obj.standard_bin))
             else:
                 logger.debug('PASS[{}]: {}'.format(obj.standard_bin, obj.path))
-            bar()
+            bar() #call bar function to increment progress bar
 
 def status():
-    """ Get the status """
+    """ Printout the status """
     pending, computed,percent, bad = 0, 0, 0, 0
     for path, obj in FileObj.instances.items():
         _, o_status, _ = obj.get_tuple()
@@ -196,9 +201,9 @@ def main(args):
     if args['init']:
         init(args)
     elif not os.path.isdir(args['--fict-dir']):
-        sys.exit('You must init a fict project first')
+        sys.exit("You must initialize a fict project first, 'fict init'")
 
-    # Construct instances of FileObj's for  use later in run.
+    # Construct FileObj instances
     construct(args)
 
     # Conditional operations after initialization and construction.
