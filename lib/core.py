@@ -59,7 +59,7 @@ def init(args):
         os.makedirs(path, exist_ok=True)
         logger.info("FICT DB created at: %s", path)
     else:
-        sys.exit("FICT DB already exists at: %s", path)
+        sys.exit("FICT DB already exists at: {}".format(path))
 
 def walkfs(path):
     """ WalkFS file generator """

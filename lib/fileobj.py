@@ -73,8 +73,7 @@ class FileObj:
         if not os.path.isdir(self.path):
             checksum_output = Popen([hash_bin, self.path], stdout=PIPE).communicate()[0].decode('utf-8').partition(' ')[0]
             return checksum_output.strip()
-        else:
-            return 'directory'
+        return 'directory'
 
     def check_integrity(self, mode):
         """Recheck integrity of file defined in self.path. Compare it to old/current hash return boolean with returns"""
@@ -82,19 +81,18 @@ class FileObj:
             current_standard_hash = self.standard_hash
             new_standard_hash = self.compute_hash(self.standard_bin)
             return bool(current_standard_hash == new_standard_hash)
-        elif mode == 'secondary':
+        if mode == 'secondary':
             current_hash = self.hash
             new_hash = self.compute_hash(self.hash_bin)
             return bool(current_hash == new_hash)
-        else:
-            return False
+        return False
 
     def set_filetype(self, filetype):
         """ Set the filetype for object """
         if filetype in ['file', 'directory']:
             self.filetype = filetype
         else:
-            logger.error("Error: Wrong filetype ({}) for file".format(filetype))
+            logger.error("Error: Wrong filetype (%s) for file", filetype)
 
     def set_hash(self):
         """ Call to compute the hash, and set the timestamp after """
@@ -114,7 +112,7 @@ class FileObj:
         self.status = status
         if self.filetype in 'file':
             # Let's not print message when dealing with directory.
-            logger.debug("- '{}' {} as\n\t {}".format(self.path, status, self.hash))
+            logger.debug("- '%s' %s as\n\t %s", self.path, status, self.hash)
 
     def set_timestamp(self):
         """ Set creation stamp of task """
