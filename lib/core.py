@@ -18,7 +18,7 @@ from alive_progress import alive_bar, alive_it
 from joblib import Parallel, delayed
 from lib.fileobj import FileObj
 
-file_ignore_list = ['.fict', 'fict_db', '@eaDir']
+FILE_IGNORE_LIST = ['.fict', 'fict_db', '@eaDir']
 logger = logging.getLogger('fict')
 
 counter = 1000
@@ -75,7 +75,7 @@ def file_already_exist(path):
 
 def ignorable_file(path):
     """ Is the path in the ingnored file list? """
-    return bool(any(path.__contains__(pattern) for pattern in file_ignore_list))
+    return bool(any(path.__contains__(pattern) for pattern in FILE_IGNORE_LIST))
 
 def add(args):
     """Create new instances of FileObjs"""
