@@ -13,6 +13,7 @@ import sys
 import threading
 from joblib import Parallel, delayed
 from lib.fileobj import FileObj
+from alive_progress import alive_bar, alive_it
 
 file_ignore_list = ['.fict', 'fict_db', '@eaDir']
 logger = logging.getLogger('fict')
@@ -112,7 +113,9 @@ def compute(args):
     # It's important to use prefer="threads" here as not using it uses processes and there's no ipc.
     # Here we use n_jobs=-2 as to ask the system for an acceptable number based on cpu. Using a higher number just
     # creates high cpu time for iowait and software interrupts.
-    Parallel(n_jobs=-2, prefer="threads")(delayed(compute_runner)(obj, args) for _, obj in FileObj.instances.items())
+    # The alive_it helper here automatically gets a count and gives us a progress bar.
+    bar_instances = alive_it(FileObj.instances.items(), enrich_print=False)
+    Parallel(n_jobs=-2, prefer="threads")(delayed(compute_runner)(obj, args) for _, obj in bar_instances)
 
 def get_list():
     """ Print list of all files and their hashes managed by Fict """
@@ -123,19 +126,25 @@ def searched_instances(args):
     re_pattern = re.compile('^{}'.format(args['<path>']))
     filtered_objects = [(path, obj) for path, obj in FileObj.instances.items() if re_pattern.match(obj.path)]
     logger.debug("{} of {} total instances match inputted pattern '{}'".format(len(filtered_objects), len(FileObj.instances.items()), args['<path>']))
-    return filtered_objects
+    if len(filtered_objects) > 0:
+        return filtered_objects
+    else:
+        return FileObj.instances.items()
 
 def check(args):
     """ Check Checksums for all files """
-    for _, obj in searched_instances(args):
-        if not obj.check_integrity(mode='standard'):
-            logger.error('std_FAIL[{}]: {}'.format(obj.standard_bin, obj.path))
-            if not obj.check_integrity(mode='secondary'):
-                logger.error('2nd_FAIL[{}]: {}'.format(obj.hash_bin, obj.path))
+    si = searched_instances(args)
+    with alive_bar(len(si), enrich_print=False) as bar:
+        for _, obj in si:
+            if not obj.check_integrity(mode='standard'):
+                logger.error('std_FAIL[{}]: {}'.format(obj.standard_bin, obj.path))
+                if not obj.check_integrity(mode='secondary'):
+                    logger.error('2nd_FAIL[{}]: {}'.format(obj.hash_bin, obj.path))
+                else:
+                    logger.info('{}: \n\tPassed secondary integrity check ({}) but failed first ({})'.format(obj.path, obj.hash_bin, obj.standard_bin))
             else:
-                logger.info('{}: \n\tPassed secondary integrity check ({}) but failed first ({})'.format(obj.path, obj.hash_bin, obj.standard_bin))
-        else:
-            logger.debug('PASS[{}]: {}'.format(obj.standard_bin, obj.path))
+                logger.debug('PASS[{}]: {}'.format(obj.standard_bin, obj.path))
+            bar()
 
 def status():
     """ Get the status """

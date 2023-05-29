@@ -13,5 +13,5 @@ setup(
     license = 'Simplified FreeBSD License',
     scripts = ['fict'],
     packages = ['lib'],
-    install_requires=["docopt", "joblib"],
+    install_requires=["docopt", "joblib", "alive_progress<2.2"],
     )
