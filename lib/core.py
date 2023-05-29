@@ -14,9 +14,9 @@ import os
 import re
 import sys
 import threading
+from alive_progress import alive_bar, alive_it
 from joblib import Parallel, delayed
 from lib.fileobj import FileObj
-from alive_progress import alive_bar, alive_it
 
 file_ignore_list = ['.fict', 'fict_db', '@eaDir']
 logger = logging.getLogger('fict')
@@ -31,17 +31,17 @@ def write_db(args):
     data = json.dumps([obj.dump() for path, obj in FileObj.instances.items()],
                       sort_keys=False, indent=4)
     db_file = os.path.abspath('{}/{}'.format(args['--fict-dir'], args['--fict-db-name']))
-    logger.debug("writing out db @ {}".format(db_file))
+    logger.debug("writing out db @ %s", db_file)
     try:
         with open(db_file, 'w') as json_db:
             json_db.write(data)
     except FileNotFoundError:
-        logger.error('Could not write to: {}'.format(db_file))
+        logger.error('Could not write to: %s', db_file)
 
 def read_db(args):
     """Read the json database from disk in read only mode"""
     db_file = os.path.abspath('{}/{}'.format(args['--fict-dir'], args['--fict-db-name']))
-    logger.debug("reading db: {}".format(db_file))
+    logger.debug("reading db: %s", db_file)
     if os.path.isfile(db_file):
         with open(db_file, 'r') as json_db:
             try:
@@ -57,9 +57,9 @@ def init(args):
     path = args['--fict-dir']
     if not os.path.isdir(path):
         os.makedirs(path, exist_ok=True)
-        logger.info("FICT DB created at: {}".format(path))
+        logger.info("FICT DB created at: %s", path)
     else:
-        sys.exit("FICT DB already exists at: {}".format(path))
+        sys.exit("FICT DB already exists at: %s", path)
 
 def walkfs(path):
     """ WalkFS file generator """
@@ -79,16 +79,16 @@ def ignorable_file(path):
 
 def add(args):
     """Create new instances of FileObjs"""
-    logger.debug("Adding path: {}".format(args['<path>']))
+    logger.debug("Adding path: %s", args['<path>'])
     if os.path.isfile(args['<path>']) and not ignorable_file(args['<path>']):
         FileObj('file', args['<path>'], args['--hash-tool'])
     elif os.path.isdir(args['<path>']):
         for filetype, path in walkfs(args['<path>']):
             if not (ignorable_file(path) or file_already_exist(path)):
                 FileObj(filetype, path, args['--hash-tool'])
-                logger.debug("Adding: {} ({})".format(path, filetype))
+                logger.debug("Adding: %s (%s)", path, filetype)
             else:
-                logger.debug("Ignored/AlreadyAdded file: {}".format(path))
+                logger.debug("Ignored/AlreadyAdded file: %s", path)
     else:
         sys.exit('Not a valid path for add')
 
@@ -105,12 +105,12 @@ def compute_runner(obj, args):
         obj.set_status('pending')
     if obj.get_status() == 'pending':
         obj.set_hash()
-        logger.debug("\t - blake2: {} \n\t - {}: {}".format(obj.get_standard_hash(), obj.get_hash_bin(), obj.get_hash()))
+        logger.debug("\t - blake2: %s \n\t - %s: %s", obj.get_standard_hash(), obj.get_hash_bin(), obj.get_hash())
         if update_file:
             with file_lock:
                 write_db(args)
     else:
-        logger.debug("Checksum already set for file {}".format(obj.get_path()))
+        logger.debug("Checksum already set for file %s", obj.get_path())
 
 def compute(args):
     """ Compute hashes of all instances in FileObj.instances """
@@ -133,7 +133,7 @@ def searched_instances(args):
     """Search instances in FileObj.instances.items() and return the ones that don't match args['<path>']"""
     re_pattern = re.compile('^{}'.format(args['<path>']))
     filtered_objects = [(path, obj) for path, obj in FileObj.instances.items() if re_pattern.match(obj.path)]
-    logger.debug("{} of {} total instances match inputted pattern '{}'".format(len(filtered_objects), len(FileObj.instances.items()), args['<path>']))
+    logger.debug("%s of %s total instances match inputted pattern '%s'", len(filtered_objects), len(FileObj.instances.items()), args['<path>'])
     if len(filtered_objects) > 0:
         return filtered_objects
     else:
@@ -145,13 +145,13 @@ def check(args):
     with alive_bar(len(instances), enrich_print=False) as bar:
         for _, obj in instances:
             if not obj.check_integrity(mode='standard'):
-                logger.error('std_FAIL[{}]: {}'.format(obj.standard_bin, obj.path))
+                logger.error('std_FAIL[%s]: %s', obj.standard_bin, obj.path)
                 if not obj.check_integrity(mode='secondary'):
-                    logger.error('2nd_FAIL[{}]: {}'.format(obj.hash_bin, obj.path))
+                    logger.error('2nd_FAIL[%s]: %s', obj.hash_bin, obj.path)
                 else:
-                    logger.info('{}: \n\tPassed secondary integrity check ({}) but failed first ({})'.format(obj.path, obj.hash_bin, obj.standard_bin))
+                    logger.info('%s: \n\tPassed secondary integrity check (%s) but failed first (%s)', obj.path, obj.hash_bin, obj.standard_bin)
             else:
-                logger.debug('PASS[{}]: {}'.format(obj.standard_bin, obj.path))
+                logger.debug('PASS[%s]: %s', obj.standard_bin, obj.path)
             bar() #call bar function to increment progress bar
 
 def status():
@@ -164,18 +164,18 @@ def status():
         elif o_status in 'computed':
             computed += 1
         else:
-            logger.error("Bad Data found check file: {}, {}".format(path, o_status))
+            logger.error("Bad Data found check file: %s, %s", path, o_status)
             bad += 1
-    logger.info("Pending Files: {}".format(pending))
-    logger.info("Computed Files: {}".format(computed))
+    logger.info("Pending Files: %s", pending)
+    logger.info("Computed Files: %s", computed)
     try:
         percent = round(computed/(computed + pending) * 100, 2)
     except ZeroDivisionError:
-        logger.info("Computed %: {}%".format(0))
+        logger.info("Computed %%: %s%%", 0)
     else:
-        logger.info("Computed %: {}%".format(percent))
+        logger.info("Computed %%: %s%%", percent)
     if bad > 0:
-        logger.error("Bad Data: {}".format(bad))
+        logger.error("Bad Data: %s", bad)
 
 def construct(args):
     """Reinitialize instances of FileObj via read_db"""
@@ -185,7 +185,7 @@ def construct(args):
     except KeyError as error:
         sys.exit('JSON Key {} expected/unexpected in your fict_db. Check FileObJ schema'.format(error))
     except:
-        logger.error('fict_db reading exception: {}'.format(sys.exc_info()[0]))
+        logger.error('fict_db reading exception: %s', sys.exc_info()[0])
         raise
 
 def setup_logging(args):
@@ -194,7 +194,7 @@ def setup_logging(args):
     logger.setLevel(logging.INFO)
     if args['--verbose']:
         logger.setLevel(logging.DEBUG)
-        logger.debug("Logging Level set to {}".format(logging.getLevelName(logger.getEffectiveLevel())))
+        logger.debug("Logging Level set to %s", logging.getLevelName(logger.getEffectiveLevel()))
         logger.debug(args)
 
 def main(args):
