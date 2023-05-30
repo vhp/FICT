@@ -68,12 +68,21 @@ class FileObj:
         node.hash = json_dict['hash']
         return node
 
-    def compute_hash(self, hash_bin):
+    def compute_hash(self, hbin):
         """Compute the hash of the file defined in self.path. Returns hash if file or string 'directory' if directory"""
-        if not os.path.isdir(self.path):
-            checksum_output = Popen([hash_bin, self.path], stdout=PIPE).communicate()[0].decode('utf-8').partition(' ')[0]
-            return checksum_output.strip()
-        return 'directory'
+        if os.path.isdir(self.path):
+            return 'directory'
+        else:
+            try:
+                checksum_output = Popen([hbin, self.path], stdout=PIPE).communicate()[0].decode('utf-8').partition(' ')[0]
+            except FileNotFoundError as fe:
+                logger.error("Error: Executable %s not found in your $PATH, (%s)", hbin, fe)
+                return None
+            except:
+                return None
+            else:
+                return checksum_output.strip()
+        return None
 
     def check_integrity(self, mode):
         """Recheck integrity of file defined in self.path. Compare it to old/current hash return boolean with returns"""
