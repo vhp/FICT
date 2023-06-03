@@ -20,6 +20,7 @@ Generic options:
     --fict-db-name=FILE         DB filename.            [default: fict_db]
     --fict-dir=DIRECTORY        Path of fict Directory. [default: ~/.fict]
     --hash-tool=FILE            Hashing Tool            [default: sha512sum]
+    --default-hash-tool=FILE    Default Hashing Tool    [default: b2sum]
     --recompute                 Recompute Checksums (By Force)
     -y, --yes                   Agree ahead of time.
     -v, --verbose               Verbos/Debug Output.
