@@ -31,8 +31,8 @@ class FileObj:
         self.uuid = None
         self.status = 'pending'
         self.timestamp = None
-        self.standard_hash = None
-        self.standard_bin = "b2sum"
+        self.default_hash = None
+        self.default_bin = "b2sum"
         self.hash_bin = hash_bin
         self.hash = None
         #Setup this instance
@@ -47,8 +47,8 @@ class FileObj:
                 'uuid': self.uuid,
                 'status':   self.status,
                 'timestamp': str(self.timestamp),
-                'standard_hash': self.standard_hash,
-                'standard_bin': self.standard_bin,
+                'default_hash': self.default_hash,
+                'default_bin': self.default_bin,
                 'hash_bin': self.hash_bin,
                 'hash': self.hash}
 
@@ -62,8 +62,8 @@ class FileObj:
         node.status = json_dict['status']
         node.timestamp = None if json_dict['timestamp'] else datetime.strptime(json_dict['timestamp'], '%Y-%m-%d %H:%M:%S.%f')
 
-        node.standard_hash = json_dict['standard_hash']
-        node.standard_bin = json_dict['standard_bin']
+        node.default_hash = json_dict['default_hash']
+        node.default_bin = json_dict['default_bin']
         node.hash_bin = json_dict['hash_bin']
         node.hash = json_dict['hash']
         return node
@@ -87,9 +87,9 @@ class FileObj:
     def check_integrity(self, mode):
         """Recheck integrity of file defined in self.path. Compare it to old/current hash return boolean with returns"""
         if mode == 'standard':
-            current_standard_hash = self.standard_hash
-            new_standard_hash = self.compute_hash(self.standard_bin)
-            return bool(current_standard_hash == new_standard_hash)
+            current_default_hash = self.default_hash
+            new_default_hash = self.compute_hash(self.default_bin)
+            return bool(current_default_hash == new_default_hash)
         if mode == 'secondary':
             current_hash = self.hash
             new_hash = self.compute_hash(self.hash_bin)
@@ -106,9 +106,9 @@ class FileObj:
     def set_hash(self):
         """ Call to compute the hash, and set the timestamp after """
         self.hash = self.compute_hash(self.hash_bin)
-        self.standard_hash = self.compute_hash(self.standard_bin)
+        self.default_hash = self.compute_hash(self.default_bin)
         self.set_timestamp()
-        if self.hash and self.standard_hash:
+        if self.hash and self.default_hash:
             self.set_status("computed")
 
     def set_uuid(self):
@@ -128,9 +128,9 @@ class FileObj:
         if self.timestamp is None:
             self.timestamp = datetime.now()
 
-    def get_standard_hash(self):
-        """ Return the standard_hash, usually Blake2 """
-        return self.standard_hash
+    def get_default_hash(self):
+        """ Return the default_hash, usually Blake2 """
+        return self.default_hash
 
     def get_status(self):
         """ Return the instances status """

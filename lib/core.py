@@ -105,7 +105,7 @@ def compute_runner(obj, args):
         obj.set_status('pending')
     if obj.get_status() == 'pending':
         obj.set_hash()
-        logger.debug("\t - blake2: %s \n\t - %s: %s", obj.get_standard_hash(), obj.get_hash_bin(), obj.get_hash())
+        logger.debug("\t - blake2: %s \n\t - %s: %s", obj.get_default_hash(), obj.get_hash_bin(), obj.get_hash())
         if update_file:
             with FILE_LOCK:
                 write_db(args)
@@ -146,13 +146,13 @@ def check(args):
             if obj.status not in "computed":
                 continue
             if not obj.check_integrity(mode='standard'):
-                logger.error('std_FAIL[%s]: %s', obj.standard_bin, obj.path)
+                logger.error('std_FAIL[%s]: %s', obj.default_bin, obj.path)
                 if not obj.check_integrity(mode='secondary'):
                     logger.error('2nd_FAIL[%s]: %s', obj.hash_bin, obj.path)
                 else:
-                    logger.info('%s: \n\tPassed secondary integrity check (%s) but failed first (%s)', obj.path, obj.hash_bin, obj.standard_bin)
+                    logger.info('%s: \n\tPassed secondary integrity check (%s) but failed first (%s)', obj.path, obj.hash_bin, obj.default_bin)
             else:
-                logger.debug('PASS[%s]: %s', obj.standard_bin, obj.path)
+                logger.debug('PASS[%s]: %s', obj.default_bin, obj.path)
             bar() #call bar function to increment progress bar
 
 def status():
