@@ -1,6 +1,6 @@
 # FICT is a simple file integrity checking tool.
 
-
+## Usage
 Basic usage is as follows.
 ```
 cd ~
@@ -37,4 +37,18 @@ your disk.
 
 If you notice any bugs feel free to email me.
 
-**Note** I use a Linux desktop so that's what I run this on. There may need to be adapting to get it to work on Macs. 
+**Note** I use a Linux desktop so that's what I run this on. There may need to be adapting to get it to work on Macs.
+
+## Installing
+`pip install Fict`
+
+You can also clone the code from [github](https://github.com/vhp/FICT) and run
+the fict command.
+
+## Publishing to Pypi
+
+```
+pip install twine
+python3 setup.py sdist
+twine upload dist/*
+```
