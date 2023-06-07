@@ -6,7 +6,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name = 'Fict',
-    version = "1.0.0",
+    version = "1.0.1",
     description = 'File integrity checking tool',
     long_description=long_description,
     long_description_content_type='text/markdown',
